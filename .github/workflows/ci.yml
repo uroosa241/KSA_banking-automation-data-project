@@ -3,7 +3,7 @@ name: KSA Banking Pipeline CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, feature/ci-documentation]
 
   pull_request:
     branches: [main]
@@ -31,18 +31,23 @@ jobs:
         run: |
           python -m compileall -q scripts dags tests
 
-      - name: Generate synthetic banking data
-        run: |
-          python -m scripts.generate_customers
-          python -m scripts.generate_accounts
-          python -m scripts.generate_transactions
+      - name: Create raw data folder
+        run: mkdir -p data/raw
+
+      - name: Generate customers
+        run: python -m scripts.generate_customers
+
+      - name: Generate accounts
+        run: python -m scripts.generate_accounts
+
+      - name: Generate transactions
+        run: python -m scripts.generate_transactions
 
       - name: Verify generated CSV files
         run: |
-          test -f data/raw/customers.csv
-          test -f data/raw/accounts.csv
-          test -f data/raw/transactions.csv
+          test -s data/raw/customers.csv
+          test -s data/raw/accounts.csv
+          test -s data/raw/transactions.csv
 
       - name: Run tests
-        run: |
-          pytest -v
+        run: pytest -v
