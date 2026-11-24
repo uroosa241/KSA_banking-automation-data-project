@@ -1,12 +1,19 @@
-
 import pandas as pd
 import random
 from faker import Faker
+from pathlib import Path
 
 fake = Faker()
 
 Faker.seed(42)
 random.seed(42)
+
+# Define absolute output directory
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data" / "raw"
+
+# Create directory if it does not exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Account categories
 account_types = ["Savings", "Current"]
@@ -14,11 +21,19 @@ account_types = ["Savings", "Current"]
 # Account statuses
 account_statuses = ["Active", "Inactive", "Blocked"]
 
-# Generate fictional accounts
+
 def generate_accounts(number_of_accounts):
 
     # Read existing customers
-    customers = pd.read_csv("data/raw/customers.csv")
+    customers_file = DATA_DIR / "customers.csv"
+
+    if not customers_file.exists():
+        raise FileNotFoundError(
+            f"Customers file not found: {customers_file}. "
+            "Run generate_customers.py first."
+        )
+
+    customers = pd.read_csv(customers_file)
 
     accounts = []
 
@@ -54,11 +69,11 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(account_data)
 
-    df.to_csv(
-        "data/raw/accounts.csv",
-        index=False
-    )
+    output_file = DATA_DIR / "accounts.csv"
+
+    df.to_csv(output_file, index=False)
 
     print("Account generation completed!")
     print("Total accounts:", len(df))
+    print("Saved to:", output_file)
     print(df.head())
