@@ -1,0 +1,30 @@
+# Data generation
+faker
+
+# Data processing
+pandas
+numpy
+
+# API extraction
+requests
+
+# PostgreSQL
+psycopg2-binary
+sqlalchemy
+
+# Airflow integration
+apache-airflow-providers-postgres
+apache-airflow-providers-http
+
+# Testing
+pytest
+pytest-cov
+
+# Code quality
+ruff
+
+# Environment configuration
+python-dotenv
+
+# Logging and configuration
+pyyaml

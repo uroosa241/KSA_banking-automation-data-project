@@ -1,0 +1,61 @@
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: ksa_banking_postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: banking_dw
+      POSTGRES_USER: banking_user
+      POSTGRES_PASSWORD: banking_password
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banking_user -d banking_dw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airflow:
+    image: apache/airflow:2.10.5
+    container_name: ksa_banking_airflow
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/project/dags
+
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: banking_dw
+      DB_USER: banking_user
+      DB_PASSWORD: banking_password
+
+      PYTHONPATH: /opt/airflow/project
+
+      _PIP_ADDITIONAL_REQUIREMENTS: "psycopg2-binary pandas numpy faker python-dotenv"
+
+    volumes:
+      - ./:/opt/airflow/project
+
+    ports:
+      - "8080:8080"
+
+    command: standalone
+
+    user: "${AIRFLOW_UID:-50000}:0"
+
+volumes:
+  postgres_data:
