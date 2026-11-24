@@ -1,13 +1,19 @@
-
 import pandas as pd
 import random
 from faker import Faker
-from datetime import datetime, timedelta
+from pathlib import Path
 
 fake = Faker()
 
 Faker.seed(42)
 random.seed(42)
+
+# Define absolute output directory
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data" / "raw"
+
+# Create directory if it does not exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Transaction categories
 transaction_types = [
@@ -23,11 +29,20 @@ transaction_statuses = [
     "Pending"
 ]
 
+
 def generate_transactions(number_of_transactions):
 
     print("Reading bank accounts...")
 
-    accounts = pd.read_csv("data/raw/accounts.csv")
+    accounts_file = DATA_DIR / "accounts.csv"
+
+    if not accounts_file.exists():
+        raise FileNotFoundError(
+            f"Accounts file not found: {accounts_file}. "
+            "Run generate_accounts.py first."
+        )
+
+    accounts = pd.read_csv(accounts_file)
 
     transactions = []
 
@@ -55,8 +70,7 @@ def generate_transactions(number_of_transactions):
 
         transactions.append(transaction)
 
-        # Display progress
-        if i % 100000 == 0:
+        if i % 10000 == 0:
             print(f"Generated {i:,} transactions")
 
     return transactions
@@ -72,15 +86,13 @@ if __name__ == "__main__":
 
     df = pd.DataFrame(transaction_data)
 
+    output_file = DATA_DIR / "transactions.csv"
+
     print("Saving transactions CSV...")
 
-    df.to_csv(
-        "data/raw/transactions.csv",
-        index=False
-    )
+    df.to_csv(output_file, index=False)
 
     print("Transaction generation completed!")
-
     print("Total transactions:", len(df))
-
+    print("Saved to:", output_file)
     print(df.head())

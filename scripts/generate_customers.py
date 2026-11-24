@@ -1,7 +1,7 @@
-
 import pandas as pd
 from faker import Faker
 import random
+from pathlib import Path
 
 # Initialize Faker
 fake = Faker()
@@ -9,6 +9,13 @@ fake = Faker()
 # Make results reproducible
 Faker.seed(42)
 random.seed(42)
+
+# Define absolute output directory
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data" / "raw"
+
+# Create directory if it does not exist
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # Saudi cities
 cities = [
@@ -22,7 +29,7 @@ cities = [
     "Abha"
 ]
 
-# Generate customers
+
 def generate_customers(number_of_customers):
 
     customers = []
@@ -52,22 +59,19 @@ def generate_customers(number_of_customers):
     return customers
 
 
-# Main execution
 if __name__ == "__main__":
 
     print("Generating banking customers...")
 
     customer_data = generate_customers(100000)
 
-    # Convert Python data into DataFrame
     df = pd.DataFrame(customer_data)
 
-    # Save data into CSV
-    df.to_csv(
-        "data/raw/customers.csv",
-        index=False
-    )
+    output_file = DATA_DIR / "customers.csv"
+
+    df.to_csv(output_file, index=False)
 
     print("Customer generation completed!")
     print("Total customers:", len(df))
+    print("Saved to:", output_file)
     print(df.head())
